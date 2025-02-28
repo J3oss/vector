@@ -8,11 +8,6 @@
 #define INIT_CAPACITY 10
 #define GROWTH_RATE 3 / 2
 
-#ifdef _MSC_VER
-#include <intrin.h>
-#define __builtin_popcount __popcnt
-#endif
-
 typedef struct
 {
 	size_t size;
@@ -26,7 +21,6 @@ typedef struct
 #define SIZE(X) METADATA_PTR((*(X)))->size
 #define TSIZE(X) METADATA_PTR((*(X)))->tsize
 #define CAPACITY(X) METADATA_PTR((*(X)))->capacity
-#define GET_PTR(IN, SIZE_IN) (__builtin_popcount((SIZE_IN)) == 1 && (SIZE_IN) <= 8) ? &(IN) : (void *)(IN)
 
 //returns pointer to meta data
 void *vec_alloc(void *pMetaData, size_t dataSize)
@@ -53,35 +47,47 @@ void *_impl_new_vec(size_t type_size, size_t capacity)
 void vec_free(void *p_vec)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
+
 	free(METADATA_PTR(*pp_vec));
 }
 
 size_t vec_size(void *p_vec)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
+
 	return SIZE(pp_vec);
 }
 
 size_t vec_capacity(void *p_vec)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
+
 	return CAPACITY(pp_vec);
 }
 
 size_t vec_element_size(void *p_vec)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
+
 	return TSIZE(pp_vec);
 }
 
 bool vec_is_empty(void *p_vec)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
+
 	return SIZE(pp_vec) ? false : true;
 }
 
 void vec_reserve(void **pp_vec, size_t new_capacity)
 {
+	assert(*pp_vec);
+
 	if (CAPACITY(pp_vec) > new_capacity)
 	{
 		return;
@@ -95,6 +101,7 @@ void vec_reserve(void **pp_vec, size_t new_capacity)
 void vec_resize(void *p_vec, size_t size)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
 
 	if (size > SIZE(pp_vec))
 	{
@@ -107,6 +114,7 @@ void vec_resize(void *p_vec, size_t size)
 void vec_shrink_fit(void *p_vec)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
 
 	meta_data_t *new_v = vec_alloc(METADATA_PTR(*pp_vec), SIZE(pp_vec) * CAPACITY(pp_vec));
 	new_v->size = new_v->size;
@@ -115,38 +123,15 @@ void vec_shrink_fit(void *p_vec)
 	*pp_vec = ++new_v;
 }
 
-size_t CALLCONVENTION vec_push(void *p_vec, ...)
+size_t vec_push(void *p_vec, void *data)
 {
-	VA_LIST args;
-	VA_START(args, p_vec);
-
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
 
 	size_t size = SIZE(pp_vec);
 	size_t tsize = TSIZE(pp_vec);
-
-	if (CAPACITY(pp_vec) < size + 1)
-	{
-		vec_reserve(pp_vec, size * GROWTH_RATE);
-	}
-
-	char *dest = (char *)(*pp_vec) + size * tsize;
-
-	size_t value = VA_ARG(args, size_t);
-	void *ptr_value = GET_PTR(value, tsize);
-	memcpy(dest, ptr_value, tsize);
-
-	METADATA_PTR(*pp_vec)->size = size + 1;
-
-	return size;
-}
-
-size_t vec_push_ptr(void *p_vec, void *value)
-{
-	void **pp_vec = p_vec;
-
-	size_t size = SIZE(pp_vec);
-	size_t tsize = TSIZE(pp_vec);
+	assert(size >= 0);
+	assert(tsize > 0);
 
 	if (CAPACITY(pp_vec) < size + 1)
 	{
@@ -154,7 +139,7 @@ size_t vec_push_ptr(void *p_vec, void *value)
 	}
 
 	char *dest = (char *)*pp_vec + size * tsize;
-	memcpy(dest, value, tsize);
+	memcpy(dest, data, tsize);
 
 	METADATA_PTR(*pp_vec)->size = size + 1;
 
@@ -164,11 +149,18 @@ size_t vec_push_ptr(void *p_vec, void *value)
 void vec_remove(void *p_vec, size_t index)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
 
 	size_t size = SIZE(pp_vec);
 	size_t tsize = TSIZE(pp_vec);
+	assert(size >= 0);
+	assert(tsize > 0);
 
-	assert(size);
+	if (size <= 0)
+	{
+		return;
+	}
+
 	METADATA_PTR(*pp_vec)->size = --size;
 
 	char *dest = (char *)*pp_vec + index * tsize;
@@ -179,11 +171,18 @@ void vec_remove(void *p_vec, size_t index)
 void vec_remove_ordered(void *p_vec, size_t index)
 {
 	void **pp_vec = p_vec;
+	assert(*pp_vec);
 
 	size_t size = SIZE(pp_vec);
 	size_t tsize = TSIZE(pp_vec);
+	assert(size >= 0);
+	assert(tsize > 0);
 
-	assert(size);
+	if (size <= 0)
+	{
+		return;
+	}
+
 	METADATA_PTR(*pp_vec)->size = --size;
 
 	char *dest = (char *)*pp_vec + index * tsize;

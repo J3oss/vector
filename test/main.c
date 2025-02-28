@@ -43,18 +43,17 @@ int main()
 
 	for (uint32_t i = 0; i < 10; ++i)
 	{
-		vec_push(&v, i);
+		vec_push(&v, &i);
 	}
-	vec_remove_ordered(&v, 0);
 
 	printf("Size after pushing elements: %llu\n", vec_size(&v));
-	// assert(vec_size(&v) == 10);
+	assert(vec_size(&v) == 10);
 	printf("Capacity after pushing elements: %llu\n", vec_capacity(&v));
 
 	for (uint32_t i = 0; i < vec_size(&v); ++i)
 	{
 		printf("Element at index %d: %d\n", i, v[i]);
-		// assert(v[i] == i);
+		assert(v[i] == i);
 	}
 
 	vec_resize(&v, 15);
@@ -65,7 +64,7 @@ int main()
 
 	for (int i = 10; i < 15; ++i)
 	{
-		vec_push(&v, i);
+		vec_push(&v, &i);
 	}
 
 	printf("Size after pushing more elements: %llu\n", vec_size(&v));
@@ -109,21 +108,21 @@ int main()
 	vec(struct struct11) v_s11 = new_vec(struct struct11, 0);
 	vec(struct struct17) v_s17 = new_vec(struct struct17, 0);
 
-	vec_push(&v_s03, s03_0);
-	vec_push(&v_s03, s03_1);
-	vec_push(&v_s03, s03_2);
+	vec_push(&v_s03, &s03_0);
+	vec_push(&v_s03, &s03_1);
+	vec_push(&v_s03, &s03_2);
 
-	vec_push(&v_s07, s07_0);
-	vec_push(&v_s07, s07_1);
-	vec_push(&v_s07, s07_2);
+	vec_push(&v_s07, &s07_0);
+	vec_push(&v_s07, &s07_1);
+	vec_push(&v_s07, &s07_2);
 
-	vec_push(&v_s11, s11_0);
-	vec_push(&v_s11, s11_1);
-	vec_push(&v_s11, s11_2);
+	vec_push(&v_s11, &s11_0);
+	vec_push(&v_s11, &s11_1);
+	vec_push(&v_s11, &s11_2);
 
-	vec_push(&v_s17, s17_0);
-	vec_push(&v_s17, s17_1);
-	vec_push(&v_s17, s17_2);
+	vec_push(&v_s17, &s17_0);
+	vec_push(&v_s17, &s17_1);
+	vec_push(&v_s17, &s17_2);
 
 	for (uint32_t i = 0; i < vec_size(&v_s03); ++i)
 	{
