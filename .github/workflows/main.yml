@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ${{ matrix.os }}
+    continue-on-error: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Debug, Release]
+        compiler: [clang, gcc, cl]
+        exclude:
+          - os: ubuntu-latest
+            compiler: cl
+          - os: windows-latest
+            compiler: gcc
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: |
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DVEC_BUILD_TEST=ON ../
+      - name: Build & Test
+        run: |
+          cd build
+          cmake --build .
+          cd test
+          ctest --output-on-failure
